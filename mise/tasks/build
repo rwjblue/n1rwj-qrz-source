@@ -1,6 +1,7 @@
 #!/usr/bin/env bash
-#MISE sources=["src/**/*","eleventy.config.cjs","package.json","package-lock.json"]
-#MISE outputs=["dist/index.html"]
+#MISE sources=["src/**/*","eleventy.config.cjs","package.json","package-lock.json","mise/tasks/**/*"]
+#MISE outputs=["dist/index.html","dist/styles.css","dist/assets/images/.processed-stamp"]
 set -euo pipefail
 
 NODE_ENV=production npm run build
+mise run images

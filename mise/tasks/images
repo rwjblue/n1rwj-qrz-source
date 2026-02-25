@@ -1,0 +1,112 @@
+#!/usr/bin/env bash
+#MISE sources=["src/images/**/*","mise/tasks/**/*"]
+#MISE outputs=["dist/assets/images/.processed-stamp"]
+set -euo pipefail
+
+if ! command -v sips >/dev/null 2>&1; then
+  echo "sips not found; this task currently requires macOS."
+  exit 1
+fi
+
+mkdir -p src/images
+rm -rf dist/assets/images
+mkdir -p dist/assets/images
+
+processed=0
+has_collision=0
+has_invalid=0
+collision_map_dir="$(mktemp -d)"
+trap 'rm -rf "$collision_map_dir"' EXIT
+
+is_valid_qrz_filename() {
+  local name="$1"
+  [[ "$name" =~ ^[A-Za-z0-9_-]+\.[A-Za-z0-9]+$ ]]
+}
+
+target_name_for() {
+  local source_base="$1"
+  local stem="${source_base%.*}"
+  local ext="${source_base##*.}"
+  local lower_ext
+  lower_ext="$(printf '%s' "$ext" | tr '[:upper:]' '[:lower:]')"
+
+  # QRZ generally expects web image formats; convert HEIC to JPG.
+  if [[ "$lower_ext" == "heic" ]]; then
+    printf '%s.jpg' "$stem"
+  else
+    printf '%s' "$source_base"
+  fi
+}
+
+# Pre-check collisions so we fail before writing outputs.
+while IFS= read -r -d '' src_file; do
+  base="$(basename "$src_file")"
+  if ! is_valid_qrz_filename "$base"; then
+    echo "Invalid filename for QRZ rules: $src_file" >&2
+    echo "Allowed pattern: letters/numbers/underscore/hyphen + extension (no spaces or punctuation)." >&2
+    has_invalid=1
+    continue
+  fi
+
+  rel_dir="$(dirname "${src_file#src/images/}")"
+  target_name="$(target_name_for "$base")"
+  rel_target="${rel_dir}/${target_name}"
+  marker="$collision_map_dir/$rel_target.source"
+  mkdir -p "$(dirname "$marker")"
+
+  if [[ -e "$marker" ]]; then
+    echo "Image name collision for output: dist/assets/images/$rel_target" >&2
+    echo "  - $(cat "$marker")" >&2
+    echo "  - $src_file" >&2
+    has_collision=1
+  else
+    printf '%s\n' "$src_file" > "$marker"
+  fi
+done < <(find src/images -type f \( -iname '*.jpg' -o -iname '*.jpeg' -o -iname '*.png' -o -iname '*.gif' -o -iname '*.heic' \) -print0)
+
+if [[ "$has_invalid" -ne 0 ]]; then
+  echo "Rename invalid source files in src/images/ and retry." >&2
+  exit 1
+fi
+
+if [[ "$has_collision" -ne 0 ]]; then
+  echo "Resolve collisions by renaming source files in src/images/ and retry." >&2
+  exit 1
+fi
+
+while IFS= read -r -d '' src_file; do
+  base="$(basename "$src_file")"
+  rel_dir="$(dirname "${src_file#src/images/}")"
+  target_dir="dist/assets/images/$rel_dir"
+  target_name="$(target_name_for "$base")"
+  target="$target_dir/$target_name"
+  mkdir -p "$target_dir"
+
+  width="$(sips -g pixelWidth "$src_file" 2>/dev/null | awk '/pixelWidth:/ {print $2}')"
+  lower_ext="$(printf '%s' "${base##*.}" | tr '[:upper:]' '[:lower:]')"
+
+  if [[ "$lower_ext" == "heic" ]]; then
+    if [[ "$width" =~ ^[0-9]+$ ]] && [[ "$width" -gt 1600 ]]; then
+      sips -s format jpeg -s formatOptions 82 --resampleWidth 1600 "$src_file" --out "$target" >/dev/null
+    else
+      sips -s format jpeg -s formatOptions 82 "$src_file" --out "$target" >/dev/null
+    fi
+  else
+    if [[ "$width" =~ ^[0-9]+$ ]] && [[ "$width" -gt 1600 ]]; then
+      sips --resampleWidth 1600 "$src_file" --out "$target" >/dev/null
+    else
+      cp "$src_file" "$target"
+    fi
+  fi
+
+  processed=$((processed + 1))
+done < <(find src/images -type f \( -iname '*.jpg' -o -iname '*.jpeg' -o -iname '*.png' -o -iname '*.gif' -o -iname '*.heic' \) -print0)
+
+touch dist/assets/images/.processed-stamp
+
+if [[ "$processed" -eq 0 ]]; then
+  echo "No source images found in src/images."
+  echo "Add .jpg/.jpeg/.png/.gif/.heic files and run: mise run images"
+else
+  echo "Processed $processed image(s) into dist/assets/images/."
+fi

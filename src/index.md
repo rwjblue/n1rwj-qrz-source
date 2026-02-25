@@ -45,6 +45,16 @@ The station is active today, with incremental upgrades as the setup evolves.
 - Fidelity Amateur Radio Club (member)
 - Rhode Island ARES (participant)
 
+## Photos
+
+- Station photos: coming soon
+- Portable/POTA photos: coming soon
+
+<!-- Example:
+![Station overview](assets/images/station-overview.jpg)
+![Portable setup](assets/images/portable-setup.jpg)
+-->
+
 ## QSL / Logging
 
 - LoTW preferred; uploads periodically

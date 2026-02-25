@@ -29,10 +29,33 @@ mise run build
 mise run dev
 ```
 
+## Images workflow
+
+1. Put source photos in `src/images/`.
+2. Build:
+
+```
+mise run build
+```
+
+3. Use links in markdown like:
+
+```md
+![Station overview](assets/images/station-overview.jpg)
+```
+
+4. Build output will include:
+- `dist/index.html`
+- `dist/styles.css`
+- `dist/assets/images/*`
+
+Optional: run only the image step with `mise run images`.
+
 ## Project layout
 
 - `src/index.md` - main page content
 - `src/_includes/base.njk` - page layout template
+- `src/images/` - source photos to process
 - `dist/` - build output (generated)
-- `mise/tasks/` - task scripts (`build`, `dev`)
+- `mise/tasks/` - task scripts (`build`, `copy`, `dev`, `images`)
 - `mise/config.toml` - toolchain configuration (Node 24)

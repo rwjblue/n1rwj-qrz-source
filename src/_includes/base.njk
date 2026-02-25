@@ -60,5 +60,10 @@
       </header>
       {{ content | safe }}
     </main>
+    {% if source_repo %}
+      <footer style="max-width: 840px; margin: 0 auto; padding: 0 1.5rem 2.5rem; color: var(--muted); font-size: 0.95rem;">
+        Built from <a href="{{ source_repo }}" style="color: var(--accent); text-decoration: none;">source</a>
+      </footer>
+    {% endif %}
   </body>
 </html>

@@ -1,0 +1,64 @@
+<!doctype html>
+<html lang="en">
+  <head>
+    <meta charset="utf-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1" />
+    <title>{{ title or "N1RWJ" }}</title>
+    <style>
+      :root {
+        color-scheme: light;
+        --bg: #f5f3ef;
+        --ink: #1b1a18;
+        --accent: #0b4f6c;
+        --muted: #5c5853;
+      }
+      body {
+        margin: 0;
+        font-family: "Georgia", "Times New Roman", serif;
+        background: var(--bg);
+        color: var(--ink);
+      }
+      main {
+        max-width: 840px;
+        margin: 0 auto;
+        padding: 3rem 1.5rem 4rem;
+      }
+      h1, h2 {
+        letter-spacing: 0.02em;
+      }
+      h1 {
+        font-size: 2.6rem;
+        margin-bottom: 0.2rem;
+      }
+      h2 {
+        margin-top: 2rem;
+        font-size: 1.4rem;
+        color: var(--accent);
+      }
+      p, li {
+        line-height: 1.6;
+        font-size: 1.05rem;
+      }
+      ul {
+        padding-left: 1.2rem;
+      }
+      header {
+        border-bottom: 2px solid var(--accent);
+        padding-bottom: 0.5rem;
+        margin-bottom: 1.5rem;
+      }
+      .subtitle {
+        color: var(--muted);
+        font-size: 1rem;
+      }
+    </style>
+  </head>
+  <body>
+    <main>
+      <header>
+        <div class="subtitle">QRZ.com page source for N1RWJ</div>
+      </header>
+      {{ content | safe }}
+    </main>
+  </body>
+</html>

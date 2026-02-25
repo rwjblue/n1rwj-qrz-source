@@ -1,0 +1,11 @@
+#!/usr/bin/env bash
+#MISE depends=["build"]
+set -euo pipefail
+
+if command -v pbcopy >/dev/null 2>&1; then
+  pbcopy < dist/index.html
+  echo "Copied dist/index.html to clipboard."
+else
+  echo "pbcopy not found. Copy dist/index.html manually."
+  exit 1
+fi
